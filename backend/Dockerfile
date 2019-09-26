@@ -2,9 +2,8 @@ FROM openjdk:8-jdk-alpine
 
 EXPOSE 8080
 
-ARG JAR_FILE
 WORKDIR /app
-COPY ${JAR_FILE} /app/app.jar
+COPY build/libs/guestbook-0.1.0.jar /app/app.jar
 
 ENV SPRING_PROFILES_ACTIVE=memory
 
