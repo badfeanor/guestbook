@@ -77,8 +77,8 @@ project {
         steps {
             dockerCommand {
                 commandType = build {
-                    commandArgs = "JAR_FILE=build/libs/*.jar"
-                    contextDir = "backend"
+                    commandArgs = "JAR_FILE=backend/build/libs/*.jar"
+//                    contextDir = "backend"
                     source = file {
                         path = "backend/Dockerfile"
                     }
