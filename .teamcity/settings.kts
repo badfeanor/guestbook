@@ -1,5 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.exec
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -26,21 +28,58 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 version = "2019.2"
 
 project {
+    buildType {
+        name = "Build Backend"
 
-    buildType(BuildBackend)
-}
+        vcs {
+            root(DslContext.settingsRoot)
+        }
 
-object BuildBackend : BuildType({
-    name = "Build Backend"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-
-    steps {
-        gradle {
-            tasks = "build"
-            workingDir = "backend"
+        steps {
+            gradle {
+                tasks = "build"
+                workingDir = "backend"
+            }
         }
     }
-})
+
+    buildType {
+        name = "Build Frontend"
+
+        vcs {
+            root(DslContext.settingsRoot)
+        }
+
+        steps {
+            script {
+                workingDir = "frontend"
+                scriptContent = "npm install run build"
+                dockerImage = "node"
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
