@@ -30,6 +30,7 @@ version = "2019.2"
 project {
     buildType {
         name = "Build Backend"
+        id = RelativeId("BuildBackend")
 
         vcs {
             root(DslContext.settingsRoot)
@@ -45,6 +46,7 @@ project {
 
     buildType {
         name = "Build Frontend"
+        id = RelativeId("BuildFrontend")
 
         vcs {
             root(DslContext.settingsRoot)
