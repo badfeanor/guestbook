@@ -28,14 +28,11 @@ version = "2019.2"
 
 project {
     buildType(BuildBackend)
-
     buildType(BuildFrontend)
-
     buildType(DockerBackend)
-
     buildType(DockerFrontend)
-
     buildType(Test)
+    buildType(Deploy)
 }
 
 object BuildBackend : BuildType({
@@ -196,8 +193,23 @@ object Test : BuildType({
     }
 })
 
+object Deploy : BuildType({
+    name = "Deploy"
 
+    vcs {
+        root(DslContext.settingsRoot)
+    }
 
+    steps {
+        exec {
+            path = "deploy/deploy.sh"
+        }
+    }
+
+    dependencies {
+        snapshot(Test) {}
+    }
+})
 
 
 
