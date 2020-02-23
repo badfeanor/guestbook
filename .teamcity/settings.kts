@@ -1,5 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.RelativeId
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -96,6 +97,14 @@ npm run-script build
             }
         }
 
+        features {
+            dockerSupport {
+                loginToRegistry = on {
+                    dockerRegistryId = "PROJECT_EXT_174"
+                }
+            }
+        }
+
         dependencies {
             dependency(RelativeId("BuildBackend")) {
                 snapshot {}
@@ -127,6 +136,14 @@ npm run-script build
             dockerCommand {
                 commandType = push {
                     namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook-frontend:%build.number%"
+                }
+            }
+        }
+
+        features {
+            dockerSupport {
+                loginToRegistry = on {
+                    dockerRegistryId = "PROJECT_EXT_174"
                 }
             }
         }
