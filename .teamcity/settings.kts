@@ -53,7 +53,7 @@ project {
         name = "Build Frontend"
         id = RelativeId("BuildFrontend")
 
-        artifactRules = "frontend/dist/ => dist.zip"
+        artifactRules = "frontend/docker/dist/ => dist.zip"
 
         vcs {
             root(DslContext.settingsRoot)
