@@ -173,6 +173,12 @@ npm run-script build
             }
         }
 
+        params {
+            param("env.REPOSITORY_URL", "734426463323.dkr.ecr.eu-west-1.amazonaws.com/")
+            param("env.FRONTEND_IMAGE_VERSION", "frontend-%dep.${RelativeId("DockerFrontend")}.build.number%")
+            param("env.BACKEND_IMAGE_VERSION", "backend-%dep.${RelativeId("DockerBackend")}.build.number%")
+        }
+
         dependencies {
             snapshot(RelativeId("DockerBackend")) {}
             snapshot(RelativeId("DockerFrontend")) {}
