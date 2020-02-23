@@ -1,9 +1,6 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
-import jetbrains.buildServer.configs.kotlin.v2019_2.RelativeId
+import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.project
-import jetbrains.buildServer.configs.kotlin.v2019_2.version
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -30,175 +27,174 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 version = "2019.2"
 
 project {
-    buildType {
-        name = "Build Backend"
-        id = RelativeId("BuildBackend")
+    buildType(BuildBackend)
 
-        artifactRules = "backend/build/libs/*.jar"
+    buildType(BuildFrontend)
 
-        vcs {
-            root(DslContext.settingsRoot)
+    buildType(DockerBackend)
+
+    buildType(DockerFrontend)
+
+    buildType(Test)
+}
+
+object BuildBackend : BuildType({
+    name = "Build Backend"
+
+    artifactRules = "backend/build/libs/*.jar"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        gradle {
+            tasks = "build"
+            workingDir = "backend"
         }
+    }
+})
 
-        steps {
-            gradle {
-                tasks = "build"
-                workingDir = "backend"
+object DockerBackend : BuildType({
+    name = "Docker Backend"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        dockerCommand {
+            commandType = build {
+                commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
+                source = file {
+                    path = "backend/Dockerfile"
+                }
+                namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:backend-%build.number%"
+            }
+        }
+        dockerCommand {
+            commandType = push {
+                namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:backend-%build.number%"
             }
         }
     }
 
-    buildType {
-        name = "Build Frontend"
-        id = RelativeId("BuildFrontend")
-
-        artifactRules = "frontend/docker/dist/ => dist.zip"
-
-        vcs {
-            root(DslContext.settingsRoot)
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_174"
+            }
         }
+    }
 
-        steps {
-            script {
-                workingDir = "frontend"
-                scriptContent = """
+    dependencies {
+        dependency(RelativeId("BuildBackend")) {
+            snapshot {}
+            artifacts {
+                artifactRules = "*.jar => backend/build/libs/"
+            }
+        }
+    }
+})
+
+object BuildFrontend : BuildType({
+    name = "Build Frontend"
+
+    artifactRules = "frontend/docker/dist/ => dist.zip"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        script {
+            workingDir = "frontend"
+            scriptContent = """
 npm install
 npm run-script build
 """.trimIndent()
-                dockerImage = "node"
+            dockerImage = "node"
+        }
+    }
+})
+
+object DockerFrontend : BuildType({
+    name = "Docker Frontend"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        dockerCommand {
+            commandType = build {
+                commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
+                source = file {
+                    path = "frontend/docker/Dockerfile"
+                }
+                namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:frontend-%build.number%"
+            }
+        }
+        dockerCommand {
+            commandType = push {
+                namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:frontend-%build.number%"
             }
         }
     }
 
-    buildType {
-        name = "Docker Backend"
-        id = RelativeId("DockerBackend")
-
-        vcs {
-            root(DslContext.settingsRoot)
-        }
-
-        steps {
-            dockerCommand {
-                commandType = build {
-                    commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
-                    source = file {
-                        path = "backend/Dockerfile"
-                    }
-                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:backend-%build.number%"
-                }
-            }
-            dockerCommand {
-                commandType = push {
-                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:backend-%build.number%"
-                }
-            }
-        }
-
-        features {
-            dockerSupport {
-                loginToRegistry = on {
-                    dockerRegistryId = "PROJECT_EXT_174"
-                }
-            }
-        }
-
-        dependencies {
-            dependency(RelativeId("BuildBackend")) {
-                snapshot {}
-                artifacts {
-                    artifactRules = "*.jar => backend/build/libs/"
-                }
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_174"
             }
         }
     }
 
-    buildType {
-        name = "Docker Frontend"
-        id = RelativeId("DockerFrontend")
-
-        vcs {
-            root(DslContext.settingsRoot)
-        }
-
-        steps {
-            dockerCommand {
-                commandType = build {
-                    commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
-                    source = file {
-                        path = "frontend/docker/Dockerfile"
-                    }
-                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:frontend-%build.number%"
-                }
-            }
-            dockerCommand {
-                commandType = push {
-                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook:frontend-%build.number%"
-                }
+    dependencies {
+        dependency(RelativeId("BuildFrontend")) {
+            snapshot {}
+            artifacts {
+                artifactRules = "dist.zip!** => frontend/docker/dist/"
             }
         }
+    }
+})
 
-        features {
-            dockerSupport {
-                loginToRegistry = on {
-                    dockerRegistryId = "PROJECT_EXT_174"
-                }
-            }
+object Test : BuildType({
+    name = "Test"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        dockerCompose {
+            file = "systemTests/docker-compose.yml"
         }
+        exec {
+            path = "systemTests/systemTests.sh"
+        }
+    }
 
-        dependencies {
-            dependency(RelativeId("BuildFrontend")) {
-                snapshot {}
-                artifacts {
-                    artifactRules = "dist.zip!** => frontend/docker/dist/"
-                }
+    params {
+        param("env.REPOSITORY_URL", "734426463323.dkr.ecr.eu-west-1.amazonaws.com/")
+        param("env.FRONTEND_IMAGE_VERSION", "guestbook:frontend-%dep.${RelativeId("DockerFrontend")}.build.number%")
+        param("env.BACKEND_IMAGE_VERSION", "guestbook:backend-%dep.${RelativeId("DockerBackend")}.build.number%")
+    }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_174"
             }
         }
     }
 
-    buildType {
-        name = "Test"
-        id = RelativeId("Test")
-
-        vcs {
-            root(DslContext.settingsRoot)
-        }
-
-        steps {
-            dockerCompose {
-                file = "systemTests/docker-compose.yml"
-            }
-            exec {
-                path = "systemTests/systemTests.sh"
-            }
-        }
-
-        params {
-            param("env.REPOSITORY_URL", "734426463323.dkr.ecr.eu-west-1.amazonaws.com/")
-            param("env.FRONTEND_IMAGE_VERSION", "guestbook:frontend-%dep.${RelativeId("DockerFrontend")}.build.number%")
-            param("env.BACKEND_IMAGE_VERSION", "guestbook:backend-%dep.${RelativeId("DockerBackend")}.build.number%")
-        }
-
-        features {
-            dockerSupport {
-                loginToRegistry = on {
-                    dockerRegistryId = "PROJECT_EXT_174"
-                }
-            }
-        }
-
-        dependencies {
-            snapshot(RelativeId("DockerBackend")) {}
-            snapshot(RelativeId("DockerFrontend")) {}
-        }
+    dependencies {
+        snapshot(RelativeId("DockerBackend")) {}
+        snapshot(RelativeId("DockerFrontend")) {}
     }
-}
-
-
-
-
-
-
+})
 
 
 
