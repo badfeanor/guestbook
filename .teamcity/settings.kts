@@ -169,7 +169,7 @@ npm run-script build
                 file = "systemTests/docker-compose.yml"
             }
             exec {
-                path = "systemTests/docker-compose.sh"
+                path = "systemTests/systemTests.sh"
             }
         }
 
