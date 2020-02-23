@@ -1,9 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.RelativeId
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.version
 
@@ -155,6 +153,29 @@ npm run-script build
                     artifactRules = "dist.zip!** => frontend/docker/dist/"
                 }
             }
+        }
+    }
+
+    buildType {
+        name = "Test"
+        id = RelativeId("Test")
+
+        vcs {
+            root(DslContext.settingsRoot)
+        }
+
+        steps {
+            dockerCompose {
+                file = "systemTests/docker-compose.yml"
+            }
+            exec {
+                path = "systemTests/docker-compose.sh"
+            }
+        }
+
+        dependencies {
+            snapshot(RelativeId("DockerBackend")) {}
+            snapshot(RelativeId("DockerFrontend")) {}
         }
     }
 }
