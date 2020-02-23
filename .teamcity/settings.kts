@@ -62,7 +62,7 @@ project {
         steps {
             script {
                 workingDir = "frontend"
-                scriptContent = "npm install run build"
+                scriptContent = "npm install run-script build"
                 dockerImage = "node"
             }
         }
