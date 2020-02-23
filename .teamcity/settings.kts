@@ -35,7 +35,7 @@ project {
     buildType(Deploy)
 }
 
-object BuildBackend : BuildType({
+object BuildBackend : MyBuildType({
     name = "Build Backend"
 
     artifactRules = "backend/build/libs/*.jar"
@@ -52,12 +52,8 @@ object BuildBackend : BuildType({
     }
 })
 
-object DockerBackend : BuildType({
+object DockerBackend : MyBuildType({
     name = "Docker Backend"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
 
     steps {
         dockerCommand {
@@ -76,14 +72,6 @@ object DockerBackend : BuildType({
         }
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_174"
-            }
-        }
-    }
-
     dependencies {
         dependency(RelativeId("BuildBackend")) {
             snapshot {}
@@ -94,14 +82,10 @@ object DockerBackend : BuildType({
     }
 })
 
-object BuildFrontend : BuildType({
+object BuildFrontend : MyBuildType({
     name = "Build Frontend"
 
     artifactRules = "frontend/docker/dist/ => dist.zip"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
 
     steps {
         script {
@@ -115,12 +99,8 @@ npm run-script build
     }
 })
 
-object DockerFrontend : BuildType({
+object DockerFrontend : MyBuildType({
     name = "Docker Frontend"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
 
     steps {
         dockerCommand {
@@ -139,14 +119,6 @@ object DockerFrontend : BuildType({
         }
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_174"
-            }
-        }
-    }
-
     dependencies {
         dependency(RelativeId("BuildFrontend")) {
             snapshot {}
@@ -157,12 +129,8 @@ object DockerFrontend : BuildType({
     }
 })
 
-object Test : BuildType({
+object Test : MyBuildType({
     name = "Test"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
 
     steps {
         dockerCompose {
@@ -179,26 +147,14 @@ object Test : BuildType({
         param("env.BACKEND_IMAGE_VERSION", "guestbook:backend-%dep.${RelativeId("DockerBackend")}.build.number%")
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_174"
-            }
-        }
-    }
-
     dependencies {
         snapshot(RelativeId("DockerBackend")) {}
         snapshot(RelativeId("DockerFrontend")) {}
     }
 })
 
-object Deploy : BuildType({
+object Deploy : MyBuildType({
     name = "Deploy"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
 
     steps {
         exec {
@@ -211,9 +167,21 @@ object Deploy : BuildType({
     }
 })
 
+open class MyBuildType(init: BuildType.() -> Unit) : BuildType(init) {
+    init {
+        vcs {
+            root(DslContext.settingsRoot)
+        }
 
-
-
+        features {
+            dockerSupport {
+                loginToRegistry = on {
+                    dockerRegistryId = "PROJECT_EXT_174"
+                }
+            }
+        }
+    }
+}
 
 
 
