@@ -89,6 +89,11 @@ npm run-script build
                     namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook-backend:%build.number%"
                 }
             }
+            dockerCommand {
+                commandType = push {
+                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook-backend:%build.number%"
+                }
+            }
         }
 
         dependencies {
@@ -116,6 +121,11 @@ npm run-script build
                     source = file {
                         path = "frontend/docker/Dockerfile"
                     }
+                    namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook-frontend:%build.number%"
+                }
+            }
+            dockerCommand {
+                commandType = push {
                     namesAndTags = "734426463323.dkr.ecr.eu-west-1.amazonaws.com/guestbook-frontend:%build.number%"
                 }
             }
