@@ -179,6 +179,14 @@ npm run-script build
             param("env.BACKEND_IMAGE_VERSION", "guestbook:backend-%dep.${RelativeId("DockerBackend")}.build.number%")
         }
 
+        features {
+            dockerSupport {
+                loginToRegistry = on {
+                    dockerRegistryId = "PROJECT_EXT_174"
+                }
+            }
+        }
+
         dependencies {
             snapshot(RelativeId("DockerBackend")) {}
             snapshot(RelativeId("DockerFrontend")) {}
