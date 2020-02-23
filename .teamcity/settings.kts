@@ -53,6 +53,8 @@ project {
         name = "Build Frontend"
         id = RelativeId("BuildFrontend")
 
+        artifactRules = "frontend/dist/ => dist.zip"
+
         vcs {
             root(DslContext.settingsRoot)
         }
@@ -78,7 +80,6 @@ project {
             dockerCommand {
                 commandType = build {
                     commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
-//                    contextDir = "backend"
                     source = file {
                         path = "backend/Dockerfile"
                     }
@@ -91,6 +92,35 @@ project {
                 snapshot {}
                 artifacts {
                     artifactRules = "*.jar => backend/build/libs/"
+                }
+            }
+        }
+    }
+
+    buildType {
+        name = "Docker Fronted"
+        id = RelativeId("DockerFronted")
+
+        vcs {
+            root(DslContext.settingsRoot)
+        }
+
+        steps {
+            dockerCommand {
+                commandType = build {
+                    commandArgs = "--build-arg JAR_FILE=backend/build/libs/*.jar"
+                    source = file {
+                        path = "frontend/docker/Dockerfile"
+                    }
+                }
+            }
+        }
+
+        dependencies {
+            dependency(RelativeId("BuildFronted")) {
+                snapshot {}
+                artifacts {
+                    artifactRules = "dist.zip!** => frontend/docker/dist/"
                 }
             }
         }
