@@ -98,8 +98,8 @@ project {
     }
 
     buildType {
-        name = "Docker Fronted"
-        id = RelativeId("DockerFronted")
+        name = "Docker Frontend"
+        id = RelativeId("DockerFrontend")
 
         vcs {
             root(DslContext.settingsRoot)
@@ -117,7 +117,7 @@ project {
         }
 
         dependencies {
-            dependency(RelativeId("BuildFronted")) {
+            dependency(RelativeId("BuildFrontend")) {
                 snapshot {}
                 artifacts {
                     artifactRules = "dist.zip!** => frontend/docker/dist/"
